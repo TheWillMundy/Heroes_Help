@@ -1,0 +1,6 @@
+Flask
+flask-ask
+gunicorn
+fuzzywuzzy
+requests
+unidecode

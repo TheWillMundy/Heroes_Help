@@ -1,0 +1,4 @@
+headline_msg: |
+  <speak>
+    The current {{source}} headlines are <break time="1s"/> {{headlines}}
+  </speak>
