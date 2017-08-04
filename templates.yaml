@@ -1,4 +1,4 @@
-headline_msg: |
+tierlist_msg: |
   <speak>
-    The current {{source}} headlines are <break time="1s"/> {{headlines}}
+    The heroes in tier {{tier_num}} are <break time="0.5s"/> {{heroes}}
   </speak>

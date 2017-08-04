@@ -1,6 +1,7 @@
 from flask import Flask, render_template
 from flask_ask import Ask, statement, question, session
-from fuzzywuzzy import fuzz, process
+from bs4 import BeautifulSoup
+from word2number import w2n
 import json
 import requests
 import time
@@ -8,6 +9,48 @@ import unidecode
 
 app = Flask(__name__)
 ask = Ask(app, "/heroes_help")
+
+#Helper Methods
+def get_tierlist(tier):
+    url = "https://www.heroescounters.com/tierlist"
+    response = requests.get(url)
+    html = response.content
+    soup = BeautifulSoup(html, "lxml")
+    soup = soup.find(class_="counters-tab-tierlist-currentpatch")
+    allHeroes = {}
+    for el in soup.findChildren():
+        if el.name == 'h2':
+            currentTier = unidecode.unidecode(el.contents[0].string)
+            allHeroes[currentTier] = []
+        elif el.name == 'a':
+            hero_name = el['data-heroname'].encode("ascii", "ignore")
+            if (hero_name == "Lcio"):
+                hero_name = "Lucio"
+            allHeroes[currentTier].append(hero_name)
+    #allHeroes stores heroes in each tier through dictionary
+    return sort_tierlist(tier, allHeroes)
+
+def sort_tierlist(tier, allHeroes):
+    if str(tier) == "1":
+        return allHeroes['Tier 1 ']
+    elif str(tier) == "2":
+        return allHeroes['Tier 2 ']
+    elif str(tier) == "3":
+        return allHeroes['Tier 3 ']
+    elif str(tier) == "4":
+        return allHeroes['Tier 4 ']
+    elif str(tier) == "5":
+        return allHeroes['Tier 5 ']
+    else:
+        allTiers = []
+        for tier in sorted(allHeroes):
+            allTiers.append(allHeroes[tier])
+        return allTiers
+
+def tiername_fixer(tier):
+    if (tier.lower() == "all"):
+        return tier
+    return w2n.word_to_num(tier)
 
 @app.route('/')
 def homepage():
@@ -21,7 +64,25 @@ def start_skill():
 @ask.intent("TierlistIntent")
 def tierlist_intent(tier):
     #Takes a tier as the slot, returns top heroes in tier (by role)
-    pass
+    tier = tiername_fixer(tier)
+    heroes_list = get_tierlist(tier)
+    if (tier != "all" and heroes_list):
+        heroes = ", ".join(heroes_list)
+        response = '<speak> The heroes in tier {} are <break time="0.5s"/> {} </speak>'.format(tier, heroes)
+        return statement(response)
+    elif (tier != "all" and not heroes_list):
+        response = "<speak> Currently, there are no heroes in this tier. </speak>"
+        return statement(response)
+    else:
+        response = "<speak> "
+        for tier_list in heroes_list:
+            if tier_list:
+                heroes = ", ".join(tier_list)
+                response += (' The heroes in tier {} are <break time="0.5s"/> {} <break time="0.75s"/>'.format(heroes_list.index(tier_list) + 1, heroes))
+            else:
+                response += (' There are no heroes in tier {}. '.format(heroes_list.index(tier_list) + 1))
+        response += (" </speak>")
+        return statement(response)
 
 @ask.intent("AMAZON.HelpIntent")
 def help_intent():
