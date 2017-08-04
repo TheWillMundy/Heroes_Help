@@ -18,6 +18,11 @@ def start_skill():
     welcome_message = "<speak>Hi, welcome to Heroes Helper!</speak>"
     return question(welcome_message)
 
+@ask.intent("TierlistIntent")
+def tierlist_intent(tier):
+    #Takes a tier as the slot, returns top heroes in tier (by role)
+    pass
+
 @ask.intent("AMAZON.HelpIntent")
 def help_intent():
     help_text = '<speak></speak>'
