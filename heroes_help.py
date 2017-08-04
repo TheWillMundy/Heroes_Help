@@ -6,6 +6,8 @@ import json
 import requests
 import time
 import unidecode
+import inflect
+inflect_engine = inflect.engine()
 
 app = Flask(__name__)
 ask = Ask(app, "/heroes_help")
@@ -73,7 +75,8 @@ def tierlist_intent(tier):
         return statement(tier)
     heroes_list = get_tierlist(tier)
     if (tier != "all" and heroes_list):
-        heroes = ", ".join(heroes_list)
+        heroes = '<break time="400ms"/>#'.join(heroes_list).split("#")
+        heroes = inflect_engine.join(heroes)
         response = '<speak> The heroes in tier {} are <break time="0.5s"/> {} </speak>'.format(tier, heroes)
         return statement(response)
     elif (tier != "all" and not heroes_list):
@@ -83,7 +86,8 @@ def tierlist_intent(tier):
         response = "<speak> "
         for tier_list in heroes_list:
             if tier_list:
-                heroes = ", ".join(tier_list)
+                heroes = '<break time="400ms"/>#'.join(tier_list).split("#")
+                heroes = inflect_engine.join(heroes)
                 response += (' The heroes in tier {} are <break time="0.5s"/> {} <break time="0.75s"/>'.format(heroes_list.index(tier_list) + 1, heroes))
             else:
                 response += (' There are no heroes in tier {}. '.format(heroes_list.index(tier_list) + 1))
