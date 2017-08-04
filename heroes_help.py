@@ -15,7 +15,7 @@ def get_tierlist(tier):
     url = "https://www.heroescounters.com/tierlist"
     response = requests.get(url)
     html = response.content
-    soup = BeautifulSoup(html, "lxml")
+    soup = BeautifulSoup(html, "html.parser")
     soup = soup.find(class_="counters-tab-tierlist-currentpatch")
     allHeroes = {}
     for el in soup.findChildren():
@@ -48,9 +48,11 @@ def sort_tierlist(tier, allHeroes):
         return allTiers
 
 def tiername_fixer(tier):
-    if (tier.lower() == "all"):
-        return tier
-    return w2n.word_to_num(tier)
+    if tier:
+        if (tier.isalnum() and tier.lower() == "all"):
+            return tier
+        return w2n.word_to_num(tier)
+    return "Something went wrong. Please try again!"
 
 @app.route('/')
 def homepage():
@@ -61,10 +63,14 @@ def start_skill():
     welcome_message = "<speak>Hi, welcome to Heroes Helper!</speak>"
     return question(welcome_message)
 
-@ask.intent("TierlistIntent")
+@ask.intent("TierIntent", mapping={'tier': 'tier_number'}, default={'tier': 'all'})
 def tierlist_intent(tier):
+    print "The tier they requested is {}".format(tier)
     #Takes a tier as the slot, returns top heroes in tier (by role)
+    tier = str(tier)
     tier = tiername_fixer(tier)
+    if (isinstance(tier, basestring) and tier.find("Something") >= 0):
+        return statement(tier)
     heroes_list = get_tierlist(tier)
     if (tier != "all" and heroes_list):
         heroes = ", ".join(heroes_list)
