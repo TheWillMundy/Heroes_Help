@@ -11,6 +11,7 @@ import inflect
 import urllib3
 import re
 inflect_engine = inflect.engine()
+http = urllib3.PoolManager()
 
 app = Flask(__name__)
 ask = Ask(app, "/heroes_help")
@@ -82,7 +83,6 @@ def best_maps(hero_name):
 #Indentation is weird here because it was originally written in Vim...
 def getAllHeroes():
 	url = "https://heroesofthestorm.gamepedia.com/Heroes_of_the_Storm_Wiki"
-	http = urllib3.PoolManager()
 	html = http.request("GET", url)
 	soup = BeautifulSoup(html.data, "html5lib")
 	soup = soup.find(class_="main-page-heroes")
@@ -101,6 +101,32 @@ def hero_fixer(hero_name):
         matched_hero = process.extractOne(hero_name, allHeroes)
         return matched_hero[0]
     return hero_name.capitalize()
+
+#Best Heroes on each Map
+def best_heroes():
+    map_name = map_name.replace(" ", "")
+    url = "https://www.heroescounters.com/map/{}".format(map_name)
+    html = http.request("GET", url)
+    soup = BeautifulSoup(html.data, "html5lib")
+    soup = soup.find(class_="counterlist")
+    heroes = []
+    pass
+
+
+def get_all_maps():
+    url = "https://www.heroescounters.com/map"
+    html = http.request("GET", url)
+    soup = BeautifulSoup(html.data, "html5lib")
+    soup = soup.find(class_="maplist")
+    maps = []
+    for map in soup.find_all('li'):
+        maps.append(map.a.h3.string)
+    return maps
+
+def map_fixer(map_name):
+    allMaps = get_all_maps()
+    matched_map = process.extractOne(map_name, allMaps)
+    return matched_map[0]
 
 @app.route('/')
 def homepage():
