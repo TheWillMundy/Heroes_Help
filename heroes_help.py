@@ -51,9 +51,9 @@ def sort_tierlist(tier, allHeroes):
 
 def tiername_fixer(tier):
     if tier:
-        if (tier.isalnum() and tier.lower() == "all"):
-            return tier
-        return w2n.word_to_num(tier)
+        if (tier == "?"):
+            return "all"
+        return tier
     return "Something went wrong. Please try again!"
 
 @app.route('/')
