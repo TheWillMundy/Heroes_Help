@@ -1,4 +1,4 @@
-tierlist_msg: |
+map_msg: |
   <speak>
-    The heroes in tier {{tier_num}} are <break time="0.5s"/> {{heroes}}
+    The top three maps for {{hero_name}} are <break time="0.5s"/> {{maps}}
   </speak>

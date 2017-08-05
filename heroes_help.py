@@ -2,11 +2,14 @@ from flask import Flask, render_template
 from flask_ask import Ask, statement, question, session
 from bs4 import BeautifulSoup
 from word2number import w2n
+from fuzzywuzzy import process
 import json
 import requests
 import time
 import unidecode
 import inflect
+import urllib3
+import re
 inflect_engine = inflect.engine()
 
 app = Flask(__name__)
@@ -57,6 +60,48 @@ def tiername_fixer(tier):
         return tier
     return "Something went wrong. Please try again!"
 
+#Best Maps for Heroes
+def best_maps(hero_name):
+    hero_name = hero_name.lower()
+    hero_name = hero_name.replace(" ", "")
+    url = "https://www.heroescounters.com/hero/{}#maps".format(hero_name)
+    response = requests.get(url)
+    html = response.content
+    soup = BeautifulSoup(html, "html.parser")
+    soup = soup.find(class_="counters-tab-hero-mapranking")
+    soup = soup.find(class_="filter-last")
+    soup = soup.find(class_="maplist")
+    all_maps = []
+    for listEl in soup.find_all('li'):
+        mapbox = listEl.find(class_="map-box")
+        titleTag = mapbox.find('h3')
+        map_name = titleTag.find('a').string
+        all_maps.append(map_name)
+    return all_maps
+
+#Indentation is weird here because it was originally written in Vim...
+def getAllHeroes():
+	url = "https://heroesofthestorm.gamepedia.com/Heroes_of_the_Storm_Wiki"
+	http = urllib3.PoolManager()
+	html = http.request("GET", url)
+	soup = BeautifulSoup(html.data, "html5lib")
+	soup = soup.find(class_="main-page-heroes")
+	heroes = []
+	for hero in soup.find_all(class_="hero-tile"):
+		heroes.append(hero.a["title"])
+	return heroes
+
+def hero_fixer(hero_name):
+    allHeroes = getAllHeroes()
+    allHeroes = set(allHeroes)
+    if (re.search(r'the\s', hero_name)):
+        hero_name = hero_name.replace("the", "", 1).strip()
+    print "Pre fix: {}".format(hero_name)
+    if hero_name.lower() not in map((lambda name: name.lower()), allHeroes):
+        matched_hero = process.extractOne(hero_name, allHeroes)
+        return matched_hero[0]
+    return hero_name.capitalize()
+
 @app.route('/')
 def homepage():
     return 'Greetings, this is an Alexa Skill for Heroes of the Storm. Now shoo, let the Alexa users have their turn.'
@@ -96,6 +141,20 @@ def tierlist_intent(tier):
                 response += (' There are no heroes in tier {}. '.format(heroes_list.index(tier_list) + 1))
         response += (" </speak>")
         return statement(response)
+
+@ask.intent("MapIntent")
+def map_intent(hero_name):
+    hero_name = hero_fixer(hero_name) #Need to create
+    maps = best_maps(hero_name)
+    mapped_names = ""
+    for map_index in range(0,3):
+        mapped_names += '{} <break time="0.3s"/>#'.format(maps[map_index])
+    mapped_names = mapped_names.split("#")
+    mapped_names.pop()
+    print mapped_names
+    mapped_names = inflect_engine.join(mapped_names)
+    response = render_template("map_msg", hero_name=hero_name, maps=mapped_names)
+    return statement(response)
 
 @ask.intent("AMAZON.HelpIntent")
 def help_intent():
