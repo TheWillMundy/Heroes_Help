@@ -73,6 +73,8 @@ def tierlist_intent(tier):
     tier = tiername_fixer(tier)
     if (isinstance(tier, basestring) and tier.find("Something") >= 0):
         return statement(tier)
+    elif ((tier != "all") and (int(tier) >= 6 or int(tier) <= 0)):
+        return statement("<speak> Currently, there are no heroes in this tier. </speak>")
     heroes_list = get_tierlist(tier)
     if (tier != "all" and heroes_list):
         heroes = '<break time="400ms"/>#'.join(heroes_list).split("#")
