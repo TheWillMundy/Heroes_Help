@@ -103,15 +103,19 @@ def hero_fixer(hero_name):
     return hero_name.capitalize()
 
 #Best Heroes on each Map
-def best_heroes():
+def best_heroes(map_name):
     map_name = map_name.replace(" ", "")
     url = "https://www.heroescounters.com/map/{}".format(map_name)
     html = http.request("GET", url)
     soup = BeautifulSoup(html.data, "html5lib")
     soup = soup.find(class_="counterlist")
     heroes = []
-    pass
-
+    for listEl in soup.find_all('li'):
+        try:
+            heroes.append(listEl.div.h3.a.string)
+        except:
+            pass
+    return heroes
 
 def get_all_maps():
     url = "https://www.heroescounters.com/map"
