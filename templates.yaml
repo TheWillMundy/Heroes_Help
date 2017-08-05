@@ -2,3 +2,8 @@ map_msg: |
   <speak>
     The top three maps for {{hero_name}} are <break time="0.5s"/> {{maps}}
   </speak>
+
+hero_map_msg: |
+  <speak>
+    The top {{hero_num}} heroes for {{map_name}} are <break time="0.5s"/> {{heroes}}
+  </speak>

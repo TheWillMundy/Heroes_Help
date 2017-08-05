@@ -186,6 +186,22 @@ def map_intent(hero_name):
     response = render_template("map_msg", hero_name=hero_name, maps=mapped_names)
     return statement(response)
 
+@ask.intent("HeroMapIntent")
+def hero_map_intent(map_name, hero_num = 6):
+    map_name = map_fixer(map_name)
+    heroes = best_heroes(map_name)
+    heroes = map((lambda hero: hero_fixer(hero)), heroes)
+    print heroes
+    hero_names = ""
+    for hero_index in range(0, hero_num):
+        hero_names += '{} <break time="0.3s"/>#'.format(heroes[hero_index])
+    hero_names = hero_names.split("#")
+    hero_names.pop()
+    print hero_names
+    hero_names = inflect_engine.join(hero_names)
+    response = render_template("hero_map_msg", hero_num=hero_num, map_name=map_name, heroes=heroes)
+    return statement(response)
+
 @ask.intent("AMAZON.HelpIntent")
 def help_intent():
     help_text = '<speak></speak>'
