@@ -13,6 +13,7 @@ app = Flask(__name__)
 ask = Ask(app, "/heroes_help")
 
 #Helper Methods
+#Tierlist Methods
 def get_tierlist(tier):
     url = "https://www.heroescounters.com/tierlist"
     response = requests.get(url)
