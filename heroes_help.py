@@ -80,19 +80,19 @@ def best_maps(hero_name):
         all_maps.append(map_name)
     return all_maps
 
-#Indentation is weird here because it was originally written in Vim...
-def getAllHeroes():
-	url = "https://heroesofthestorm.gamepedia.com/Heroes_of_the_Storm_Wiki"
-	html = http.request("GET", url)
-	soup = BeautifulSoup(html.data, "html5lib")
-	soup = soup.find(class_="main-page-heroes")
-	heroes = []
-	for hero in soup.find_all(class_="hero-tile"):
-		heroes.append(hero.a["title"])
-	return heroes
+def get_all_heroes():
+    url = "https://heroesofthestorm.gamepedia.com/Heroes_of_the_Storm_Wiki"
+    html = http.request("GET", url)
+    soup = BeautifulSoup(html.data, "html5lib")
+    soup = soup.find(class_="main-page-heroes")
+    heroes = []
+    for hero in soup.find_all(class_="hero-tile"):
+        heroes.append(hero.a["title"])
+    return heroes
 
-def hero_fixer(hero_name):
-    allHeroes = getAllHeroes()
+def hero_fixer(hero_name, allHeroes=None):
+    if allHeroes is None:
+        allHeroes = get_all_heroes()
     allHeroes = set(allHeroes)
     if (re.search(r'the\s', hero_name)):
         hero_name = hero_name.replace("the", "", 1).strip()
@@ -131,6 +131,14 @@ def map_fixer(map_name):
     allMaps = get_all_maps()
     matched_map = process.extractOne(map_name, allMaps)
     return matched_map[0]
+
+#Get All Heroes implemented using Offline List
+def get_all_heroes_two():
+	hero_file = open('all_hero_names.txt')
+        heroes = []
+        for hero in hero_file:
+            heroes.append(hero.replace("\n", ""))
+    	return heroes
 
 @app.route('/')
 def homepage():
@@ -186,20 +194,20 @@ def map_intent(hero_name):
     response = render_template("map_msg", hero_name=hero_name, maps=mapped_names)
     return statement(response)
 
-@ask.intent("HeroMapIntent")
-def hero_map_intent(map_name, hero_num = 6):
+@ask.intent("HeroMapIntent", default={'map_name': 'Battlefield of Eternity', 'hero_num': 6})
+def hero_map_intent(map_name, hero_num):
+    if hero_num is "?":
+        hero_num = 6
     map_name = map_fixer(map_name)
     heroes = best_heroes(map_name)
-    heroes = map((lambda hero: hero_fixer(hero)), heroes)
-    print heroes
+    heroes = map((lambda hero: hero_fixer(hero, get_all_heroes_two())), heroes)
     hero_names = ""
-    for hero_index in range(0, hero_num):
+    for hero_index in range(0, int(hero_num)):
         hero_names += '{} <break time="0.3s"/>#'.format(heroes[hero_index])
     hero_names = hero_names.split("#")
     hero_names.pop()
-    print hero_names
     hero_names = inflect_engine.join(hero_names)
-    response = render_template("hero_map_msg", hero_num=hero_num, map_name=map_name, heroes=heroes)
+    response = render_template("hero_map_msg", hero_num=hero_num, map_name=map_name, heroes=hero_names)
     return statement(response)
 
 @ask.intent("AMAZON.HelpIntent")
