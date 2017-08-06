@@ -80,23 +80,22 @@ def best_maps(hero_name):
         all_maps.append(map_name)
     return all_maps
 
-def get_all_heroes():
-    url = "https://heroesofthestorm.gamepedia.com/Heroes_of_the_Storm_Wiki"
+def getting_heroes():
+    url = "https://www.heroescounters.com/"
     html = http.request("GET", url)
     soup = BeautifulSoup(html.data, "html5lib")
-    soup = soup.find(class_="main-page-heroes")
+    soup = soup.find(class_="home-heroes-list")
     heroes = []
-    for hero in soup.find_all(class_="hero-tile"):
-        heroes.append(hero.a["title"])
+    for row in soup.find_all(class_="home-heroes-list-row"):
+        for hero in row.find_all('a'):
+            heroes.append(hero["data-heroname"])
     return heroes
 
-def hero_fixer(hero_name, allHeroes=None):
-    if allHeroes is None:
-        allHeroes = get_all_heroes()
+def hero_fixer(hero_name):
+    allHeroes = getting_heroes()
     allHeroes = set(allHeroes)
     if (re.search(r'the\s', hero_name)):
         hero_name = hero_name.replace("the", "", 1).strip()
-    print "Pre fix: {}".format(hero_name)
     if hero_name.lower() not in map((lambda name: name.lower()), allHeroes):
         matched_hero = process.extractOne(hero_name, allHeroes)
         return matched_hero[0]
@@ -131,14 +130,6 @@ def map_fixer(map_name):
     allMaps = get_all_maps()
     matched_map = process.extractOne(map_name, allMaps)
     return matched_map[0]
-
-#Get All Heroes implemented using Offline List
-def get_all_heroes_two():
-	hero_file = open('all_hero_names.txt')
-        heroes = []
-        for hero in hero_file:
-            heroes.append(hero.replace("\n", ""))
-    	return heroes
 
 @app.route('/')
 def homepage():
@@ -200,7 +191,6 @@ def hero_map_intent(map_name, hero_num):
         hero_num = 6
     map_name = map_fixer(map_name)
     heroes = best_heroes(map_name)
-    heroes = map((lambda hero: hero_fixer(hero, get_all_heroes_two())), heroes)
     hero_names = ""
     for hero_index in range(0, int(hero_num)):
         hero_names += '{} <break time="0.3s"/>#'.format(heroes[hero_index])
