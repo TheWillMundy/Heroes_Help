@@ -64,7 +64,7 @@ def tiername_fixer(tier):
 #Best Maps for Heroes
 def best_maps(hero_name):
     hero_name = hero_name.lower()
-    hero_name = hero_name.replace(" ", "")
+    hero_name = re.sub("[\s\.\'\"]", "", hero_name)
     url = "https://www.heroescounters.com/hero/{}#maps".format(hero_name)
     response = requests.get(url)
     html = response.content
