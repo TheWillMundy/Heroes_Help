@@ -103,7 +103,9 @@ def hero_fixer(hero_name):
 
 #Best Heroes on each Map
 def best_heroes(map_name):
-    map_name = map_name.replace(" ", "")
+    # map_name = map_name.replace(" ", "")
+    map_name = re.sub("\W", "", map_name)
+    print map_name
     url = "https://www.heroescounters.com/map/{}".format(map_name)
     html = http.request("GET", url)
     soup = BeautifulSoup(html.data, "html5lib")
