@@ -66,6 +66,7 @@ def best_maps(hero_name):
     hero_name = hero_name.lower()
     hero_name = re.sub("[\s\.\'\"]", "", hero_name)
     url = "https://www.heroescounters.com/hero/{}#maps".format(hero_name)
+    print url
     response = requests.get(url)
     html = response.content
     soup = BeautifulSoup(html, "html.parser")
@@ -98,13 +99,22 @@ def hero_fixer(hero_name):
         hero_name = hero_name.replace("the", "", 1).strip()
     if hero_name.lower() not in map((lambda name: name.lower()), allHeroes):
         matched_hero = process.extractOne(hero_name, allHeroes)
-        return matched_hero[0]
+        matched_hero = handle_hero_edgecase(matched_hero[0])
+        print matched_hero
+        return matched_hero
+    hero_name = handle_hero_edgecase(hero_name)
     return hero_name.capitalize()
+
+def handle_hero_edgecase(hero_name):
+    #More will be added as they come up
+    if (hero_name.capitalize() == "Cho" or hero_name.capitalize() == "Gall"):
+        return "Cho'Gall"
+    return hero_name
 
 #Best Heroes on each Map
 def best_heroes(map_name):
     # map_name = map_name.replace(" ", "")
-    map_name = re.sub("\W", "", map_name)
+    map_name = re.sub("[\s\.\'\"]", "", map_name)
     print map_name
     url = "https://www.heroescounters.com/map/{}".format(map_name)
     html = http.request("GET", url)
@@ -176,6 +186,7 @@ def tierlist_intent(tier):
 @ask.intent("MapIntent")
 def map_intent(hero_name):
     hero_name = hero_fixer(hero_name) #Need to create
+    print hero_name
     maps = best_maps(hero_name)
     mapped_names = ""
     for map_index in range(0,3):
