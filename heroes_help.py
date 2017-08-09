@@ -209,7 +209,7 @@ def hero_map_intent(map_name, hero_num):
 
 @ask.intent("AMAZON.HelpIntent")
 def help_intent():
-    help_text = '<speak></speak>'
+    help_text = '<speak>Welcome to the Nexus! This skill includes three intents. First, you can ask me for a tierlist. For example you can say, "Alexa, ask Heroes Helper for Tier Number One". You can also ask me for the best heroes on a given map. For example, ask me: "Alexa, ask Heroes Helper for the best heroes on Sky Temple." You can also request a specific number of heroes in that intent. For example, you can say: "Alexa, ask Heroes Helper for the top three heroes on Sky Temple". Lastly, you can ask me for the best maps for a given hero. For example, you can say: "Alexa, ask Heroes Helper for the best maps for Uther."</speak>'
     return question(help_text)
 
 @ask.intent("AMAZON.CancelIntent")
