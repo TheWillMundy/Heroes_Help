@@ -16,6 +16,10 @@ http = urllib3.PoolManager()
 app = Flask(__name__)
 ask = Ask(app, "/heroes_help")
 
+#Variables
+string_tiers = ['First', 'Second', 'Third', 'Fourth', 'Fifth']
+number_tiers = ['1st', '2nd', '3rd', '4th', '5th']
+
 #Helper Methods
 #Tierlist Methods
 def get_tierlist(tier):
@@ -152,6 +156,19 @@ def start_skill():
 @ask.intent("TierIntent", mapping={'tier': 'tier_number'}, default={'tier': 'all'})
 def tierlist_intent(tier):
     #Takes a tier as the slot, returns top heroes in tier (by role)
+    try:
+        tier = string_tiers.index(tier.capitalize())
+        print tier
+        tier += 1
+        print tier
+    except:
+        try:
+            tier = number_tiers.index(tier.capitalize())
+            print tier
+            tier += 1
+            print tier
+        except:
+            tier = 'all'
     tier = str(tier)
     tier = tiername_fixer(tier)
     if (isinstance(tier, basestring) and tier.find("Something") >= 0):
