@@ -146,7 +146,7 @@ def homepage():
 
 @ask.launch
 def start_skill():
-    welcome_message = "<speak>Hi, welcome to Heroes Helper!</speak>"
+    welcome_message = "<speak>Hi, welcome to Heroes Helper! I can list heroes in a tierlist, tell you about the best heroes on a given map, or tell you the best maps for a given hero.</speak>"
     return question(welcome_message)
 
 @ask.intent("TierIntent", mapping={'tier': 'tier_number'}, default={'tier': 'all'})
